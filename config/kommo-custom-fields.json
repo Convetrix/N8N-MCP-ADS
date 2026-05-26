@@ -1,0 +1,25 @@
+{
+  "_instructions": "These custom fields must be created in Kommo CRM on the Lead entity. Copy the field_id values here after creation.",
+  "lead_custom_fields": [
+    { "field_code": "utm_source",       "field_name": "UTM Source",         "field_type": "text",   "required": true,  "description": "Traffic source: facebook, google, tiktok, linkedin, organic" },
+    { "field_code": "utm_medium",       "field_name": "UTM Medium",         "field_type": "text",   "required": false, "description": "Traffic medium: cpc, cpm, social, email" },
+    { "field_code": "utm_campaign",     "field_name": "UTM Campaign",       "field_type": "text",   "required": false, "description": "Campaign name" },
+    { "field_code": "utm_content",      "field_name": "UTM Content",        "field_type": "text",   "required": false, "description": "Ad content/creative identifier" },
+    { "field_code": "utm_term",         "field_name": "UTM Term",           "field_type": "text",   "required": false, "description": "Keyword term" },
+    { "field_code": "gclid",            "field_name": "Google Click ID",    "field_type": "text",   "required": false, "description": "Google Ads click ID (auto-captured from landing page)" },
+    { "field_code": "ttclid",           "field_name": "TikTok Click ID",    "field_type": "text",   "required": false, "description": "TikTok Ads click ID" },
+    { "field_code": "li_fat_id",        "field_name": "LinkedIn FAT ID",    "field_type": "text",   "required": false, "description": "LinkedIn First-Party Ads Tracking ID" },
+    { "field_code": "fbp",              "field_name": "Facebook Pixel ID",  "field_type": "text",   "required": false, "description": "_fbp cookie value" },
+    { "field_code": "fbc",              "field_name": "Facebook Click ID",  "field_type": "text",   "required": false, "description": "_fbc cookie value" },
+    { "field_code": "ip_address",       "field_name": "IP Address",         "field_type": "text",   "required": false, "description": "Visitor IP address (captured from form)" },
+    { "field_code": "user_agent",       "field_name": "User Agent",         "field_type": "text",   "required": false, "description": "Browser user agent string" },
+    { "field_code": "conversion_value", "field_name": "Conversion Value",   "field_type": "numeric", "required": false, "description": "Deal value for conversion reporting" },
+    { "field_code": "currency",         "field_name": "Currency",           "field_type": "text",   "required": false, "description": "Currency code, default: IDR" },
+    { "field_code": "city",             "field_name": "City",               "field_type": "text",   "required": false, "description": "Lead city (for better audience matching)" },
+    { "field_code": "country",          "field_name": "Country",            "field_type": "text",   "required": false, "description": "Lead country code, default: ID" }
+  ],
+  "contact_custom_fields": [
+    { "field_code": "EMAIL", "field_name": "Email", "field_type": "multitext", "required": true,  "description": "Contact email — used for PII hashing" },
+    { "field_code": "PHONE", "field_name": "Phone", "field_type": "multitext", "required": true,  "description": "Contact phone — used for PII hashing" }
+  ]
+}

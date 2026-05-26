@@ -1,0 +1,153 @@
+{
+  "name": "MCP Ads Tools — Multi-Platform Ad Management",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "mcp-ads",
+        "options": {}
+      },
+      "id": "node-mcp-server",
+      "name": "MCP Server Trigger",
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "mcp-ads-server"
+    },
+    {
+      "parameters": {
+        "name": "get_kommo_leads",
+        "description": "Get leads from Kommo CRM. Can filter by pipeline, status, or search term.",
+        "workflowInputs": {
+          "values": [
+            { "name": "pipeline_id", "type": "string", "description": "Pipeline ID to filter leads" },
+            { "name": "status_id", "type": "string", "description": "Status ID to filter leads" },
+            { "name": "query", "type": "string", "description": "Search query for leads" },
+            { "name": "limit", "type": "number", "description": "Number of leads to return (max 250)" }
+          ]
+        }
+      },
+      "id": "node-tool-get-kommo",
+      "name": "Tool: Get Kommo Leads",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [460, 160]
+    },
+    {
+      "parameters": {
+        "name": "get_meta_ad_insights",
+        "description": "Get Meta (Facebook/Instagram) Ads insights including impressions, clicks, spend, and conversions for a given date range.",
+        "workflowInputs": {
+          "values": [
+            { "name": "date_preset", "type": "string", "description": "Date preset: today, yesterday, last_7d, last_30d, this_month, last_month" },
+            { "name": "ad_account_id", "type": "string", "description": "Meta Ad Account ID (act_XXXXXXX)" },
+            { "name": "level", "type": "string", "description": "Breakdown level: account, campaign, adset, ad" }
+          ]
+        }
+      },
+      "id": "node-tool-meta-insights",
+      "name": "Tool: Meta Ad Insights",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "name": "get_google_ad_performance",
+        "description": "Get Google Ads campaign performance including clicks, impressions, cost, and conversions.",
+        "workflowInputs": {
+          "values": [
+            { "name": "customer_id", "type": "string", "description": "Google Ads Customer ID" },
+            { "name": "date_range", "type": "string", "description": "Date range: LAST_7_DAYS, LAST_30_DAYS, THIS_MONTH, LAST_MONTH" },
+            { "name": "level", "type": "string", "description": "Level: campaign, ad_group, ad" }
+          ]
+        }
+      },
+      "id": "node-tool-google-perf",
+      "name": "Tool: Google Ads Performance",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [460, 440]
+    },
+    {
+      "parameters": {
+        "name": "send_conversion_event",
+        "description": "Manually trigger a conversion event to one or more ad platforms for a specific Kommo lead ID.",
+        "workflowInputs": {
+          "values": [
+            { "name": "lead_id", "type": "string", "description": "Kommo lead ID" },
+            { "name": "platforms", "type": "string", "description": "Comma-separated platforms: meta,google,tiktok,linkedin" },
+            { "name": "event_name", "type": "string", "description": "Conversion event name: Purchase, Lead, CompleteRegistration" },
+            { "name": "value", "type": "number", "description": "Conversion value" },
+            { "name": "currency", "type": "string", "description": "Currency code: IDR, USD" }
+          ]
+        }
+      },
+      "id": "node-tool-send-conversion",
+      "name": "Tool: Send Conversion Event",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [460, 580]
+    },
+    {
+      "parameters": {
+        "name": "get_tiktok_ad_insights",
+        "description": "Get TikTok Ads performance data including impressions, clicks, spend, and conversions.",
+        "workflowInputs": {
+          "values": [
+            { "name": "advertiser_id", "type": "string", "description": "TikTok Advertiser ID" },
+            { "name": "start_date", "type": "string", "description": "Start date YYYY-MM-DD" },
+            { "name": "end_date", "type": "string", "description": "End date YYYY-MM-DD" },
+            { "name": "level", "type": "string", "description": "Level: AUCTION_CAMPAIGN, AUCTION_ADGROUP, AUCTION_AD" }
+          ]
+        }
+      },
+      "id": "node-tool-tiktok-insights",
+      "name": "Tool: TikTok Ad Insights",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [460, 720]
+    },
+    {
+      "parameters": {
+        "name": "get_linkedin_ad_analytics",
+        "description": "Get LinkedIn Campaign Manager analytics including impressions, clicks, spend, and conversions.",
+        "workflowInputs": {
+          "values": [
+            { "name": "account_id", "type": "string", "description": "LinkedIn Ad Account ID" },
+            { "name": "start_date", "type": "string", "description": "Start date YYYY-MM-DD" },
+            { "name": "end_date", "type": "string", "description": "End date YYYY-MM-DD" }
+          ]
+        }
+      },
+      "id": "node-tool-linkedin-analytics",
+      "name": "Tool: LinkedIn Ad Analytics",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [460, 860]
+    }
+  ],
+  "connections": {
+    "MCP Server Trigger": {
+      "ai_tool": [
+        [
+          { "node": "Tool: Get Kommo Leads", "type": "ai_tool", "index": 0 },
+          { "node": "Tool: Meta Ad Insights", "type": "ai_tool", "index": 0 },
+          { "node": "Tool: Google Ads Performance", "type": "ai_tool", "index": 0 },
+          { "node": "Tool: Send Conversion Event", "type": "ai_tool", "index": 0 },
+          { "node": "Tool: TikTok Ad Insights", "type": "ai_tool", "index": 0 },
+          { "node": "Tool: LinkedIn Ad Analytics", "type": "ai_tool", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    { "name": "MCP" },
+    { "name": "Ads" },
+    { "name": "AI Agent" }
+  ]
+}
