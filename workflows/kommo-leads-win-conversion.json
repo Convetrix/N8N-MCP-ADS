@@ -25,25 +25,49 @@
       "name": "Respond to Kommo",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [460, 160]
+      "position": [460, 120]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "cfg-kommo-subdomain",   "name": "KOMMO_SUBDOMAIN",                  "value": "GANTI_DENGAN_SUBDOMAIN_KOMMO_ANDA",         "type": "string" },
+            { "id": "cfg-kommo-token",        "name": "KOMMO_API_TOKEN",                  "value": "GANTI_DENGAN_KOMMO_LONG_LIVED_TOKEN",        "type": "string" },
+            { "id": "cfg-meta-pixel",         "name": "META_PIXEL_ID",                    "value": "GANTI_DENGAN_PIXEL_ID",                    "type": "string" },
+            { "id": "cfg-meta-token",         "name": "META_ACCESS_TOKEN",                "value": "GANTI_DENGAN_META_SYSTEM_USER_TOKEN",        "type": "string" },
+            { "id": "cfg-meta-test",          "name": "META_TEST_EVENT_CODE",             "value": "",                                        "type": "string" },
+            { "id": "cfg-google-cid",         "name": "GOOGLE_ADS_CUSTOMER_ID",           "value": "GANTI_CONTOH_123-456-7890",               "type": "string" },
+            { "id": "cfg-google-mcc",         "name": "GOOGLE_ADS_MANAGER_CUSTOMER_ID",   "value": "",                                        "type": "string" },
+            { "id": "cfg-google-devtoken",    "name": "GOOGLE_ADS_DEVELOPER_TOKEN",       "value": "GANTI_DENGAN_DEVELOPER_TOKEN",             "type": "string" },
+            { "id": "cfg-google-conv",        "name": "GOOGLE_ADS_CONVERSION_ACTION_ID",  "value": "GANTI_DENGAN_CONVERSION_ACTION_ID",        "type": "string" },
+            { "id": "cfg-tiktok-pixel",       "name": "TIKTOK_PIXEL_CODE",               "value": "GANTI_DENGAN_TIKTOK_PIXEL_CODE",           "type": "string" },
+            { "id": "cfg-tiktok-token",       "name": "TIKTOK_ACCESS_TOKEN",             "value": "GANTI_DENGAN_TIKTOK_ACCESS_TOKEN",          "type": "string" },
+            { "id": "cfg-tiktok-adv",         "name": "TIKTOK_ADVERTISER_ID",            "value": "GANTI_DENGAN_TIKTOK_ADVERTISER_ID",         "type": "string" },
+            { "id": "cfg-tiktok-test",        "name": "TIKTOK_TEST_EVENT_CODE",          "value": "",                                        "type": "string" },
+            { "id": "cfg-linkedin-token",     "name": "LINKEDIN_ACCESS_TOKEN",           "value": "GANTI_DENGAN_LINKEDIN_ACCESS_TOKEN",        "type": "string" },
+            { "id": "cfg-linkedin-conv",      "name": "LINKEDIN_CONVERSION_ID",          "value": "GANTI_DENGAN_LINKEDIN_CONVERSION_ID",       "type": "string" },
+            { "id": "cfg-website",            "name": "WEBSITE_URL",                     "value": "https://GANTI_DENGAN_WEBSITE_ANDA.com",    "type": "string" },
+            { "id": "cfg-leads-win-name",     "name": "LEADS_WIN_STAGE_NAME",            "value": "Leads-Win",                               "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-config",
+      "name": "⚙️ Config — Isi Nilai di Sini",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
     },
     {
       "parameters": {
         "conditions": {
-          "options": {
-            "caseSensitive": false,
-            "leftValue": "",
-            "typeValidation": "loose"
-          },
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
           "conditions": [
             {
               "id": "cond-stage-check",
-              "leftValue": "={{ $json.body.leads.status_changed[0].status.name }}",
-              "rightValue": "Leads-Win",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
+              "leftValue": "={{ $('Webhook — Kommo Event').item.json.body.leads.status_changed[0].status.name }}",
+              "rightValue": "={{ $json.LEADS_WIN_STAGE_NAME }}",
+              "operator": { "type": "string", "operation": "equals" }
             }
           ],
           "combinator": "and"
@@ -54,21 +78,16 @@
       "name": "Cek Stage = Leads-Win?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [460, 300]
+      "position": [680, 300]
     },
     {
       "parameters": {
         "method": "GET",
-        "url": "=https://{{ $env.KOMMO_SUBDOMAIN }}.kommo.com/api/v4/leads/{{ $json.body.leads.status_changed[0].id }}?with=contacts,custom_fields_values",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "url": "={{ 'https://' + $('⚙️ Config — Isi Nilai di Sini').item.json.KOMMO_SUBDOMAIN + '.kommo.com/api/v4/leads/' + $('Webhook — Kommo Event').item.json.body.leads.status_changed[0].id + '?with=contacts,custom_fields_values' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $credentials.kommoApiToken }}"
-            }
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $('⚙️ Config — Isi Nilai di Sini').item.json.KOMMO_API_TOKEN }}" }
           ]
         },
         "options": {}
@@ -77,27 +96,16 @@
       "name": "Ambil Detail Lead (Kommo)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [680, 300],
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "kommo-api-credential",
-          "name": "Kommo API Token"
-        }
-      }
+      "position": [900, 300]
     },
     {
       "parameters": {
         "method": "GET",
-        "url": "=https://{{ $env.KOMMO_SUBDOMAIN }}.kommo.com/api/v4/contacts/{{ $json._embedded.contacts[0].id }}?with=custom_fields_values",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "url": "={{ 'https://' + $('⚙️ Config — Isi Nilai di Sini').item.json.KOMMO_SUBDOMAIN + '.kommo.com/api/v4/contacts/' + $json._embedded.contacts[0].id + '?with=custom_fields_values' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $credentials.kommoApiToken }}"
-            }
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $('⚙️ Config — Isi Nilai di Sini').item.json.KOMMO_API_TOKEN }}" }
           ]
         },
         "options": {}
@@ -106,36 +114,23 @@
       "name": "Ambil Kontak Lead (Kommo)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [900, 300],
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "kommo-api-credential",
-          "name": "Kommo API Token"
-        }
-      }
+      "position": [1120, 300]
     },
     {
       "parameters": {
-        "jsCode": "// ========================================================\n// PARSE & NORMALIZE LEAD DATA FROM KOMMO\n// ========================================================\nconst leadData = $('Ambil Detail Lead (Kommo)').item.json;\nconst contactData = $('Ambil Kontak Lead (Kommo)').item.json;\n\n// Helper: get custom field value by field_id or field_code\nfunction getCF(cfArray, codeOrId) {\n  if (!cfArray) return null;\n  const cf = cfArray.find(f =>\n    f.field_code === codeOrId || String(f.field_id) === String(codeOrId)\n  );\n  return cf ? (cf.values[0]?.value ?? null) : null;\n}\n\n// Helper: SHA-256 hash for PII normalization\nasync function sha256(str) {\n  if (!str) return null;\n  const normalized = str.trim().toLowerCase();\n  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(normalized));\n  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');\n}\n\n// ---- Lead Fields ----\nconst leadCF = leadData.custom_fields_values || [];\nconst contactCF = contactData.custom_fields_values || [];\n\n// UTM & Click IDs — stored as custom fields on lead\nconst utm_source   = getCF(leadCF, 'utm_source')   || '';\nconst utm_medium   = getCF(leadCF, 'utm_medium')   || '';\nconst utm_campaign = getCF(leadCF, 'utm_campaign') || '';\nconst utm_content  = getCF(leadCF, 'utm_content')  || '';\nconst utm_term     = getCF(leadCF, 'utm_term')     || '';\nconst gclid        = getCF(leadCF, 'gclid')        || '';\nconst ttclid       = getCF(leadCF, 'ttclid')       || '';\nconst li_fat_id    = getCF(leadCF, 'li_fat_id')    || '';\nconst fbp          = getCF(leadCF, 'fbp')          || '';\nconst fbc          = getCF(leadCF, 'fbc')          || '';\nconst ip_address   = getCF(leadCF, 'ip_address')   || '';\nconst user_agent   = getCF(leadCF, 'user_agent')   || '';\nconst conversion_value = parseFloat(getCF(leadCF, 'conversion_value') || '0');\nconst currency     = getCF(leadCF, 'currency')     || 'IDR';\n\n// Contact PII\nconst rawEmail     = getCF(contactCF, 'EMAIL')     || contactData.email || '';\nconst rawPhone     = getCF(contactCF, 'PHONE')     || contactData.phone || '';\nconst rawName      = contactData.name || '';\nconst firstName    = rawName.split(' ')[0] || '';\nconst lastName     = rawName.split(' ').slice(1).join(' ') || '';\nconst city         = getCF(contactCF, 'city')      || '';\nconst country      = getCF(contactCF, 'country')   || 'ID';\n\n// Hash PII\nconst emailHash    = await sha256(rawEmail);\nconst phoneHash    = await sha256(rawPhone.replace(/\\D/g, ''));\nconst fnHash       = await sha256(firstName);\nconst lnHash       = await sha256(lastName);\nconst cityHash     = await sha256(city);\nconst countryHash  = await sha256(country);\n\n// Determine which platforms to fire\nconst src = utm_source.toLowerCase();\nconst sendMeta     = src.includes('facebook') || src.includes('instagram') || src.includes('meta') || fbp || fbc;\nconst sendGoogle   = src.includes('google') || gclid;\nconst sendTikTok   = src.includes('tiktok') || ttclid;\nconst sendLinkedIn = src.includes('linkedin') || li_fat_id;\n\nconst eventTime = Math.floor(Date.now() / 1000);\nconst eventId   = `leads-win-${leadData.id}-${eventTime}`;\n\nreturn {\n  leadId:          leadData.id,\n  leadName:        leadData.name,\n  pipeline:        leadData.pipeline_id,\n  status:          leadData.status_id,\n  conversionValue: conversion_value,\n  currency,\n  eventTime,\n  eventId,\n  utm: { utm_source, utm_medium, utm_campaign, utm_content, utm_term },\n  clickIds: { gclid, ttclid, li_fat_id, fbp, fbc },\n  device: { ip_address, user_agent },\n  contact: { rawEmail, rawPhone, firstName, lastName, city, country },\n  hashed: { emailHash, phoneHash, fnHash, lnHash, cityHash, countryHash },\n  platforms: { sendMeta, sendGoogle, sendTikTok, sendLinkedIn }\n};"
+        "jsCode": "// ========================================================\n// PARSE & NORMALIZE LEAD DATA FROM KOMMO\n// ========================================================\nconst cfg         = $('⚙️ Config — Isi Nilai di Sini').item.json;\nconst leadData    = $('Ambil Detail Lead (Kommo)').item.json;\nconst contactData = $('Ambil Kontak Lead (Kommo)').item.json;\n\nfunction getCF(cfArray, codeOrId) {\n  if (!cfArray) return null;\n  const cf = cfArray.find(f =>\n    f.field_code === codeOrId || String(f.field_id) === String(codeOrId)\n  );\n  return cf ? (cf.values[0]?.value ?? null) : null;\n}\n\nasync function sha256(str) {\n  if (!str) return null;\n  const normalized = str.trim().toLowerCase();\n  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(normalized));\n  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');\n}\n\nconst leadCF    = leadData.custom_fields_values    || [];\nconst contactCF = contactData.custom_fields_values || [];\n\nconst utm_source   = getCF(leadCF, 'utm_source')   || '';\nconst utm_medium   = getCF(leadCF, 'utm_medium')   || '';\nconst utm_campaign = getCF(leadCF, 'utm_campaign') || '';\nconst utm_content  = getCF(leadCF, 'utm_content')  || '';\nconst utm_term     = getCF(leadCF, 'utm_term')     || '';\nconst gclid        = getCF(leadCF, 'gclid')        || '';\nconst ttclid       = getCF(leadCF, 'ttclid')       || '';\nconst li_fat_id    = getCF(leadCF, 'li_fat_id')    || '';\nconst fbp          = getCF(leadCF, 'fbp')          || '';\nconst fbc          = getCF(leadCF, 'fbc')          || '';\nconst ip_address   = getCF(leadCF, 'ip_address')   || '';\nconst user_agent   = getCF(leadCF, 'user_agent')   || '';\nconst conversion_value = parseFloat(getCF(leadCF, 'conversion_value') || '0');\nconst currency     = getCF(leadCF, 'currency')     || 'IDR';\n\nconst rawEmail  = getCF(contactCF, 'EMAIL') || contactData.email || '';\nconst rawPhone  = getCF(contactCF, 'PHONE') || contactData.phone || '';\nconst rawName   = contactData.name || '';\nconst firstName = rawName.split(' ')[0] || '';\nconst lastName  = rawName.split(' ').slice(1).join(' ') || '';\nconst city      = getCF(contactCF, 'city')    || '';\nconst country   = getCF(contactCF, 'country') || 'ID';\n\nconst emailHash   = await sha256(rawEmail);\nconst phoneHash   = await sha256(rawPhone.replace(/\\D/g, ''));\nconst fnHash      = await sha256(firstName);\nconst lnHash      = await sha256(lastName);\nconst cityHash    = await sha256(city);\nconst countryHash = await sha256(country);\n\nconst src = utm_source.toLowerCase();\nconst sendMeta     = !!(src.includes('facebook') || src.includes('instagram') || src.includes('meta') || fbp || fbc);\nconst sendGoogle   = !!(src.includes('google')   || gclid);\nconst sendTikTok   = !!(src.includes('tiktok')   || ttclid);\nconst sendLinkedIn = !!(src.includes('linkedin') || li_fat_id);\n\nconst eventTime = Math.floor(Date.now() / 1000);\nconst eventId   = `leads-win-${leadData.id}-${eventTime}`;\n\nreturn {\n  cfg,\n  leadId:          leadData.id,\n  leadName:        leadData.name,\n  conversionValue: conversion_value,\n  currency,\n  eventTime,\n  eventId,\n  utm: { utm_source, utm_medium, utm_campaign, utm_content, utm_term },\n  clickIds: { gclid, ttclid, li_fat_id, fbp, fbc },\n  device: { ip_address, user_agent },\n  contact: { rawEmail, rawPhone, firstName, lastName, city, country },\n  hashed: { emailHash, phoneHash, fnHash, lnHash, cityHash, countryHash },\n  platforms: { sendMeta, sendGoogle, sendTikTok, sendLinkedIn }\n};"
       },
       "id": "node-parse-lead",
       "name": "Parse & Normalize Lead Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1120, 300]
+      "position": [1340, 300]
     },
     {
       "parameters": {
         "conditions": {
           "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
-          "conditions": [
-            {
-              "id": "cond-meta",
-              "leftValue": "={{ $json.platforms.sendMeta }}",
-              "rightValue": true,
-              "operator": { "type": "boolean", "operation": "true" }
-            }
-          ],
+          "conditions": [ { "id": "cond-meta", "leftValue": "={{ $json.platforms.sendMeta }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true" } } ],
           "combinator": "and"
         },
         "options": {}
@@ -144,20 +139,13 @@
       "name": "Kirim ke Meta?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1340, 160]
+      "position": [1560, 120]
     },
     {
       "parameters": {
         "conditions": {
           "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
-          "conditions": [
-            {
-              "id": "cond-google",
-              "leftValue": "={{ $json.platforms.sendGoogle }}",
-              "rightValue": true,
-              "operator": { "type": "boolean", "operation": "true" }
-            }
-          ],
+          "conditions": [ { "id": "cond-google", "leftValue": "={{ $json.platforms.sendGoogle }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true" } } ],
           "combinator": "and"
         },
         "options": {}
@@ -166,20 +154,13 @@
       "name": "Kirim ke Google?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1340, 340]
+      "position": [1560, 320]
     },
     {
       "parameters": {
         "conditions": {
           "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
-          "conditions": [
-            {
-              "id": "cond-tiktok",
-              "leftValue": "={{ $json.platforms.sendTikTok }}",
-              "rightValue": true,
-              "operator": { "type": "boolean", "operation": "true" }
-            }
-          ],
+          "conditions": [ { "id": "cond-tiktok", "leftValue": "={{ $json.platforms.sendTikTok }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true" } } ],
           "combinator": "and"
         },
         "options": {}
@@ -188,20 +169,13 @@
       "name": "Kirim ke TikTok?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1340, 520]
+      "position": [1560, 520]
     },
     {
       "parameters": {
         "conditions": {
           "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
-          "conditions": [
-            {
-              "id": "cond-linkedin",
-              "leftValue": "={{ $json.platforms.sendLinkedIn }}",
-              "rightValue": true,
-              "operator": { "type": "boolean", "operation": "true" }
-            }
-          ],
+          "conditions": [ { "id": "cond-linkedin", "leftValue": "={{ $json.platforms.sendLinkedIn }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true" } } ],
           "combinator": "and"
         },
         "options": {}
@@ -210,16 +184,16 @@
       "name": "Kirim ke LinkedIn?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1340, 700]
+      "position": [1560, 720]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.facebook.com/v21.0/{{ $env.META_PIXEL_ID }}/events",
+        "url": "={{ 'https://graph.facebook.com/v21.0/' + $('Parse & Normalize Lead Data').item.json.cfg.META_PIXEL_ID + '/events' }}",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
-            { "name": "access_token", "value": "={{ $env.META_ACCESS_TOKEN }}" }
+            { "name": "access_token", "value": "={{ $('Parse & Normalize Lead Data').item.json.cfg.META_ACCESS_TOKEN }}" }
           ]
         },
         "sendBody": true,
@@ -250,10 +224,10 @@
                 "content_category": "Lead",
                 "order_id": "={{ $('Parse & Normalize Lead Data').item.json.leadId }}"
               },
-              "event_source_url": "={{ $env.WEBSITE_URL }}"
+              "event_source_url": "={{ $('Parse & Normalize Lead Data').item.json.cfg.WEBSITE_URL }}"
             }
           ],
-          "test_event_code": "={{ $env.META_TEST_EVENT_CODE || '' }}"
+          "test_event_code": "={{ $('Parse & Normalize Lead Data').item.json.cfg.META_TEST_EVENT_CODE }}"
         },
         "options": {}
       },
@@ -261,29 +235,28 @@
       "name": "Meta Conversions API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1580, 120]
+      "position": [1800, 80]
     },
     {
       "parameters": {
-        "jsCode": "// ========================================================\n// GOOGLE ADS CONVERSION API (REST)\n// Uses Google Ads API v17 — Click Conversion upload\n// ========================================================\nconst d = $('Parse & Normalize Lead Data').item.json;\n\nconst customerId = $env.GOOGLE_ADS_CUSTOMER_ID.replace(/-/g, '');\nconst conversionActionId = $env.GOOGLE_ADS_CONVERSION_ACTION_ID;\n\n// Format date: RFC 3339\nconst dt = new Date(d.eventTime * 1000).toISOString();\n\nconst payload = {\n  conversions: [\n    {\n      gclid: d.clickIds.gclid || undefined,\n      conversionAction: `customers/${customerId}/conversionActions/${conversionActionId}`,\n      conversionDateTime: dt.replace('T', ' ').replace('Z', '+00:00'),\n      conversionValue: d.conversionValue || 0,\n      currencyCode: d.currency,\n      orderId: String(d.leadId),\n      userIdentifiers: [\n        { hashedEmail: d.hashed.emailHash },\n        { hashedPhoneNumber: d.hashed.phoneHash }\n      ],\n      userAgent: d.device.user_agent || ''\n    }\n  ],\n  partialFailure: true\n};\n\n$input.item.json = {\n  ...d,\n  googlePayload: payload,\n  googleEndpoint: `https://googleads.googleapis.com/v17/customers/${customerId}:uploadClickConversions`\n};\n\nreturn $input.item.json;"
+        "jsCode": "const d = $('Parse & Normalize Lead Data').item.json;\nconst customerId = d.cfg.GOOGLE_ADS_CUSTOMER_ID.replace(/-/g, '');\nconst conversionActionId = d.cfg.GOOGLE_ADS_CONVERSION_ACTION_ID;\nconst dt = new Date(d.eventTime * 1000).toISOString();\n\nreturn {\n  ...d,\n  googlePayload: {\n    conversions: [{\n      gclid: d.clickIds.gclid || undefined,\n      conversionAction: `customers/${customerId}/conversionActions/${conversionActionId}`,\n      conversionDateTime: dt.replace('T', ' ').replace('Z', '+00:00'),\n      conversionValue: d.conversionValue || 0,\n      currencyCode: d.currency,\n      orderId: String(d.leadId),\n      userIdentifiers: [\n        { hashedEmail: d.hashed.emailHash },\n        { hashedPhoneNumber: d.hashed.phoneHash }\n      ],\n      userAgent: d.device.user_agent || ''\n    }],\n    partialFailure: true\n  },\n  googleCustomerId: customerId\n};"
       },
       "id": "node-google-build",
       "name": "Build Google Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1580, 300]
+      "position": [1800, 280]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $json.googleEndpoint }}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "oAuth2Api",
+        "url": "={{ 'https://googleads.googleapis.com/v17/customers/' + $json.googleCustomerId + ':uploadClickConversions' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "developer-token", "value": "={{ $env.GOOGLE_ADS_DEVELOPER_TOKEN }}" },
-            { "name": "login-customer-id", "value": "={{ $env.GOOGLE_ADS_MANAGER_CUSTOMER_ID || $env.GOOGLE_ADS_CUSTOMER_ID }}" }
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $json.cfg.GOOGLE_ADS_OAUTH_TOKEN }}" },
+            { "name": "developer-token", "value": "={{ $json.cfg.GOOGLE_ADS_DEVELOPER_TOKEN }}" },
+            { "name": "login-customer-id", "value": "={{ $json.cfg.GOOGLE_ADS_MANAGER_CUSTOMER_ID || $json.cfg.GOOGLE_ADS_CUSTOMER_ID }}" }
           ]
         },
         "sendBody": true,
@@ -296,13 +269,7 @@
       "name": "Google Ads Conversion API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1800, 300],
-      "credentials": {
-        "oAuth2Api": {
-          "id": "google-ads-oauth2",
-          "name": "Google Ads OAuth2"
-        }
-      }
+      "position": [2020, 280]
     },
     {
       "parameters": {
@@ -311,13 +278,13 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Access-Token", "value": "={{ $env.TIKTOK_ACCESS_TOKEN }}" }
+            { "name": "Access-Token", "value": "={{ $('Parse & Normalize Lead Data').item.json.cfg.TIKTOK_ACCESS_TOKEN }}" }
           ]
         },
         "sendBody": true,
         "contentType": "json",
         "body": {
-          "pixel_code": "={{ $env.TIKTOK_PIXEL_CODE }}",
+          "pixel_code": "={{ $('Parse & Normalize Lead Data').item.json.cfg.TIKTOK_PIXEL_CODE }}",
           "event": "CompletePayment",
           "event_id": "={{ $('Parse & Normalize Lead Data').item.json.eventId }}",
           "timestamp": "={{ new Date($('Parse & Normalize Lead Data').item.json.eventTime * 1000).toISOString() }}",
@@ -347,7 +314,7 @@
             "phone_number": "={{ $('Parse & Normalize Lead Data').item.json.hashed.phoneHash }}",
             "external_id": "={{ String($('Parse & Normalize Lead Data').item.json.leadId) }}"
           },
-          "test_event_code": "={{ $env.TIKTOK_TEST_EVENT_CODE || '' }}"
+          "test_event_code": "={{ $('Parse & Normalize Lead Data').item.json.cfg.TIKTOK_TEST_EVENT_CODE }}"
         },
         "options": {}
       },
@@ -355,16 +322,16 @@
       "name": "TikTok Events API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1580, 480]
+      "position": [1800, 480]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://api.linkedin.com/rest/conversionEvents",
+        "url": "https://api.linkedin.com/rest/conversionEvents",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $env.LINKEDIN_ACCESS_TOKEN }}" },
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $('Parse & Normalize Lead Data').item.json.cfg.LINKEDIN_ACCESS_TOKEN }}" },
             { "name": "LinkedIn-Version", "value": "202401" },
             { "name": "X-Restli-Protocol-Version", "value": "2.0.0" }
           ]
@@ -372,7 +339,7 @@
         "sendBody": true,
         "contentType": "json",
         "body": {
-          "conversion": "=urn:lla:llaPartnerConversion:{{ $env.LINKEDIN_CONVERSION_ID }}",
+          "conversion": "={{ 'urn:lla:llaPartnerConversion:' + $('Parse & Normalize Lead Data').item.json.cfg.LINKEDIN_CONVERSION_ID }}",
           "conversionHappenedAt": "={{ $('Parse & Normalize Lead Data').item.json.eventTime * 1000 }}",
           "conversionValue": {
             "currencyCode": "={{ $('Parse & Normalize Lead Data').item.json.currency }}",
@@ -381,14 +348,8 @@
           "eventId": "={{ $('Parse & Normalize Lead Data').item.json.eventId }}",
           "user": {
             "userIds": [
-              {
-                "idType": "SHA256_EMAIL",
-                "idValue": "={{ $('Parse & Normalize Lead Data').item.json.hashed.emailHash }}"
-              },
-              {
-                "idType": "LINKEDIN_FIRST_PARTY_ADS_TRACKING_UUID",
-                "idValue": "={{ $('Parse & Normalize Lead Data').item.json.clickIds.li_fat_id }}"
-              }
+              { "idType": "SHA256_EMAIL", "idValue": "={{ $('Parse & Normalize Lead Data').item.json.hashed.emailHash }}" },
+              { "idType": "LINKEDIN_FIRST_PARTY_ADS_TRACKING_UUID", "idValue": "={{ $('Parse & Normalize Lead Data').item.json.clickIds.li_fat_id }}" }
             ]
           }
         },
@@ -398,120 +359,94 @@
       "name": "LinkedIn Conversions API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1580, 660]
+      "position": [1800, 680]
     },
     {
       "parameters": {
-        "jsCode": "// Aggregate all conversion results\nconst results = {\n  leadId: $('Parse & Normalize Lead Data').item.json.leadId,\n  platforms: $('Parse & Normalize Lead Data').item.json.platforms,\n  timestamp: new Date().toISOString(),\n  status: 'conversions_sent'\n};\n\nconsole.log('Conversion tracking complete:', JSON.stringify(results));\nreturn results;"
+        "jsCode": "const d = $('Parse & Normalize Lead Data').item.json;\nconsole.log('Conversion tracking complete:', JSON.stringify({\n  leadId: d.leadId,\n  platforms: d.platforms,\n  timestamp: new Date().toISOString()\n}));\nreturn { status: 'done', leadId: d.leadId, platforms: d.platforms };"
       },
       "id": "node-log-result",
       "name": "Log Result",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2020, 400]
+      "position": [2240, 400]
     }
   ],
   "connections": {
     "Webhook — Kommo Event": {
-      "main": [
-        [
-          { "node": "Respond to Kommo", "type": "main", "index": 0 },
-          { "node": "Cek Stage = Leads-Win?", "type": "main", "index": 0 }
-        ]
-      ]
+      "main": [[
+        { "node": "Respond to Kommo", "type": "main", "index": 0 },
+        { "node": "⚙️ Config — Isi Nilai di Sini", "type": "main", "index": 0 }
+      ]]
+    },
+    "⚙️ Config — Isi Nilai di Sini": {
+      "main": [[
+        { "node": "Cek Stage = Leads-Win?", "type": "main", "index": 0 }
+      ]]
     },
     "Cek Stage = Leads-Win?": {
       "main": [
-        [
-          { "node": "Ambil Detail Lead (Kommo)", "type": "main", "index": 0 }
-        ],
+        [{ "node": "Ambil Detail Lead (Kommo)", "type": "main", "index": 0 }],
         []
       ]
     },
     "Ambil Detail Lead (Kommo)": {
-      "main": [
-        [
-          { "node": "Ambil Kontak Lead (Kommo)", "type": "main", "index": 0 }
-        ]
-      ]
+      "main": [[{ "node": "Ambil Kontak Lead (Kommo)", "type": "main", "index": 0 }]]
     },
     "Ambil Kontak Lead (Kommo)": {
-      "main": [
-        [
-          { "node": "Parse & Normalize Lead Data", "type": "main", "index": 0 }
-        ]
-      ]
+      "main": [[{ "node": "Parse & Normalize Lead Data", "type": "main", "index": 0 }]]
     },
     "Parse & Normalize Lead Data": {
-      "main": [
-        [
-          { "node": "Kirim ke Meta?", "type": "main", "index": 0 },
-          { "node": "Kirim ke Google?", "type": "main", "index": 0 },
-          { "node": "Kirim ke TikTok?", "type": "main", "index": 0 },
-          { "node": "Kirim ke LinkedIn?", "type": "main", "index": 0 }
-        ]
-      ]
+      "main": [[
+        { "node": "Kirim ke Meta?",     "type": "main", "index": 0 },
+        { "node": "Kirim ke Google?",   "type": "main", "index": 0 },
+        { "node": "Kirim ke TikTok?",   "type": "main", "index": 0 },
+        { "node": "Kirim ke LinkedIn?", "type": "main", "index": 0 }
+      ]]
     },
     "Kirim ke Meta?": {
       "main": [
-        [ { "node": "Meta Conversions API", "type": "main", "index": 0 } ],
+        [{ "node": "Meta Conversions API", "type": "main", "index": 0 }],
         []
       ]
     },
     "Kirim ke Google?": {
       "main": [
-        [ { "node": "Build Google Payload", "type": "main", "index": 0 } ],
+        [{ "node": "Build Google Payload", "type": "main", "index": 0 }],
         []
       ]
     },
     "Build Google Payload": {
-      "main": [
-        [ { "node": "Google Ads Conversion API", "type": "main", "index": 0 } ]
-      ]
+      "main": [[{ "node": "Google Ads Conversion API", "type": "main", "index": 0 }]]
     },
     "Kirim ke TikTok?": {
       "main": [
-        [ { "node": "TikTok Events API", "type": "main", "index": 0 } ],
+        [{ "node": "TikTok Events API", "type": "main", "index": 0 }],
         []
       ]
     },
     "Kirim ke LinkedIn?": {
       "main": [
-        [ { "node": "LinkedIn Conversions API", "type": "main", "index": 0 } ],
+        [{ "node": "LinkedIn Conversions API", "type": "main", "index": 0 }],
         []
       ]
     },
-    "Meta Conversions API": {
-      "main": [ [ { "node": "Log Result", "type": "main", "index": 0 } ] ]
-    },
-    "Google Ads Conversion API": {
-      "main": [ [ { "node": "Log Result", "type": "main", "index": 0 } ] ]
-    },
-    "TikTok Events API": {
-      "main": [ [ { "node": "Log Result", "type": "main", "index": 0 } ] ]
-    },
-    "LinkedIn Conversions API": {
-      "main": [ [ { "node": "Log Result", "type": "main", "index": 0 } ] ]
-    }
+    "Meta Conversions API":     { "main": [[{ "node": "Log Result", "type": "main", "index": 0 }]] },
+    "Google Ads Conversion API": { "main": [[{ "node": "Log Result", "type": "main", "index": 0 }]] },
+    "TikTok Events API":         { "main": [[{ "node": "Log Result", "type": "main", "index": 0 }]] },
+    "LinkedIn Conversions API":  { "main": [[{ "node": "Log Result", "type": "main", "index": 0 }]] }
   },
   "pinData": {},
   "settings": {
     "executionOrder": "v1",
     "saveManualExecutions": true,
-    "callerPolicy": "workflowsFromSameOwner",
-    "errorWorkflow": ""
+    "callerPolicy": "workflowsFromSameOwner"
   },
   "staticData": null,
   "tags": [
-    { "name": "CRM" },
-    { "name": "Conversions" },
-    { "name": "Kommo" },
-    { "name": "Meta Ads" },
-    { "name": "Google Ads" },
-    { "name": "TikTok Ads" },
-    { "name": "LinkedIn Ads" }
+    { "name": "CRM" }, { "name": "Conversions" }, { "name": "Kommo" },
+    { "name": "Meta Ads" }, { "name": "Google Ads" }, { "name": "TikTok Ads" }, { "name": "LinkedIn Ads" }
   ],
   "triggerCount": 1,
-  "updatedAt": "2026-05-26T00:00:00.000Z",
-  "versionId": "v1.0.0"
+  "versionId": "v2.0.0"
 }
